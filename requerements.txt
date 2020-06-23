@@ -1,0 +1,5 @@
+pyTelegramBotAPI==3.7.1
+selenium==3.141.0
+validators==0.15.0
+screeninfo==0.6.5
+webdriver-manager==3.2.1
