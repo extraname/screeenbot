@@ -26,20 +26,6 @@ def start_message(message):
     bot.send_message(message.chat.id, 'Hello, I can give you screenshot, just give me link')
 
 
-# @bot.message_handler(content_types=['text'])
-# def send_text(message):
-#     """ Main answer block"""
-#     if message.text.startswith('http://') or message.text.startswith('https://'):
-#         if validators.url(message.text):
-#             do_screenshot(message.from_user.first_name, message.date, message.text)
-#             with open(f'media/{message.from_user.first_name}.{message.date}.png', 'rb') as photo:
-#                 bot.send_photo(message.chat.id, photo=photo)
-#         else:
-#             bot.send_message(message.chat.id, 'Url is not valid')
-#     else:
-#         bot.send_message(message.chat.id, 'Please, input correct URL')
-
-
 @bot.message_handler(content_types=['text'])
 def send_text(message):
     """ Main answer block"""
