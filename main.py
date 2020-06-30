@@ -12,7 +12,9 @@ bot = telebot.TeleBot(config.token)
 
 def do_screenshot(username, date, url):
     """ Script  """
+    # init driver
     driver = webdriver.Chrome(ChromeDriverManager().install())
+    # use manager
     with driver:
         driver.get(url)
 
@@ -29,11 +31,14 @@ def do_screenshot(username, date, url):
                                                   'document.documentElement.clientHeight, '
                                                   'document.documentElement.scrollHeight, '
                                                   'document.documentElement.offsetHeight);')
-
+        # set width
+        driver.set_window_size(1980, height)
+        # start to add parts of height
         while offset < max_window_height:
             # Scroll to height
             driver.execute_script(f'window.scrollTo(0, {offset});')
             img = Image.open(BytesIO((driver.get_screenshot_as_png())))
+            print(img.size)
             img_li.append(img)
             offset += height
 
@@ -41,6 +46,7 @@ def do_screenshot(username, date, url):
         # Set up the full screen frame
         img_frame_height = sum([img_frag.size[1] for img_frag in img_li])
         img_frame = Image.new('RGB', (img_li[0].size[0], img_frame_height))
+
         offset = 0
         for img_frag in img_li:
             img_frame.paste(img_frag, (0, offset))
@@ -61,7 +67,8 @@ def send_text(message):
     if validators.url(message.text):
         do_screenshot(message.from_user.first_name, message.date, message.text)
         with open(f'media/{message.from_user.first_name}.{message.date}.png', 'rb') as photo:
-            bot.send_photo(message.chat.id, photo=photo)
+            # use file sending instead of photo because the file is too large
+            bot.send_document(message.chat.id, data=photo)
     else:
         bot.send_message(message.chat.id, "Please input correct URL. Thank's you")
 
