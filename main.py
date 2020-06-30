@@ -2,27 +2,55 @@ import config
 import os
 import telebot
 import validators
-from screeninfo import get_monitors
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from io import BytesIO
+from PIL import Image
 
 bot = telebot.TeleBot(config.token)
 
 
 def do_screenshot(username, date, url):
-    """ Script block """
+    """ Script  """
     driver = webdriver.Chrome(ChromeDriverManager().install())
+    with driver:
+        driver.get(url)
 
-    driver.get(url)
-    for size in get_monitors():
-        driver.set_window_size(size.width, size.height)
-        el = driver.find_element_by_tag_name('body')
-        el.screenshot(filename=os.path.join('media', f'{username}.{date}.png'))
-        driver.quit()
+        img_li = []
+        offset = 0
+
+        height = driver.execute_script('return Math.max('
+                                       'document.documentElement.clientHeight, '
+                                       'window.innerHeight);')
+
+        max_window_height = driver.execute_script('return Math.max('
+                                                  'document.body.scrollHeight, '
+                                                  'document.body.offsetHeight, '
+                                                  'document.documentElement.clientHeight, '
+                                                  'document.documentElement.scrollHeight, '
+                                                  'document.documentElement.offsetHeight);')
+
+        while offset < max_window_height:
+            # Scroll to height
+            driver.execute_script(f'window.scrollTo(0, {offset});')
+            img = Image.open(BytesIO((driver.get_screenshot_as_png())))
+            img_li.append(img)
+            offset += height
+
+        # Stitch image into one
+        # Set up the full screen frame
+        img_frame_height = sum([img_frag.size[1] for img_frag in img_li])
+        img_frame = Image.new('RGB', (img_li[0].size[0], img_frame_height))
+        offset = 0
+        for img_frag in img_li:
+            img_frame.paste(img_frag, (0, offset))
+            offset += img_frag.size[1]
+        img_frame.save(os.path.join('media', f'{username}.{date}.png'))
 
 
 @bot.message_handler(commands=['start', 'help'])
 def start_message(message):
+    """ Start , help block"""
     bot.send_message(message.chat.id, 'Hello, I can give you screenshot, just give me link')
 
 
