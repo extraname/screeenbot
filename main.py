@@ -38,7 +38,6 @@ def do_screenshot(username, date, url):
             # Scroll to height
             driver.execute_script(f'window.scrollTo(0, {offset});')
             img = Image.open(BytesIO((driver.get_screenshot_as_png())))
-            print(img.size)
             img_li.append(img)
             offset += height
 
